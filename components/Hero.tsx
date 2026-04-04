@@ -21,44 +21,47 @@ export default function Hero() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // ÉTAT INITIAL : On cache tout sauf la première slide
+      // autoAlpha gère l'opacité ET la visibilité (évite les bugs mobiles)
+      gsap.set(textRefs.current.slice(1), { autoAlpha: 0, y: 30 });
+      gsap.set(videoRefs.current.slice(1), { autoAlpha: 0 });
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
           start: "top top",
           end: "+=400%", 
-          scrub: 0.5,
+          scrub: 1, // Lissage pour éviter les saccades au pouce
           pin: true,
           anticipatePin: 1,
+          invalidateOnRefresh: true, // Recalcule si la barre d'adresse mobile bouge
         },
       });
 
-      gsap.set(textRefs.current.slice(1), { opacity: 0, y: 30 });
-      gsap.set(videoRefs.current.slice(1), { opacity: 0 });
-
-      // Animation des titres
+      // Animation des transitions entre slides
       slides.forEach((_, i) => {
         if (i < slides.length - 1) {
-          tl.to(textRefs.current[i], { opacity: 0, y: -30, duration: 1 }, `fade${i}`)
-            .to(videoRefs.current[i], { opacity: 0, duration: 1 }, `fade${i}`)
-            .to(textRefs.current[i + 1], { opacity: 1, y: 0, duration: 1 }, `fade${i}`)
-            .to(videoRefs.current[i + 1], { opacity: 1, duration: 1 }, `fade${i}`);
+          const label = `fade${i}`;
+          tl.add(label);
+
+          // Sortie de la slide actuelle
+          tl.to(textRefs.current[i], { autoAlpha: 0, y: -40, duration: 1 }, label)
+            .to(videoRefs.current[i], { autoAlpha: 0, duration: 1 }, label)
+            
+          // Entrée de la suivante (avec un léger décalage pour éviter le ghosting)
+          tl.to(textRefs.current[i + 1], { autoAlpha: 1, y: 0, duration: 1 }, `${label}+=0.3`)
+            .to(videoRefs.current[i + 1], { autoAlpha: 1, duration: 1 }, `${label}+=0.3`);
         }
       });
 
-      // EFFET DE RÉDUCTION + RÉVÉLATION DE LA SUITE
+      // EFFET DE RÉDUCTION FINAL
       tl.to(innerRef.current, {
-        scale: 0.9,
+        scale: 0.92,
         borderRadius: "40px",
-        opacity: 0,
+        autoAlpha: 0,
         duration: 2,
         ease: "power2.inOut"
-      }, "+=0.2")
-      // On fait monter la section suivante pour éviter le trou noir/gris
-      .to(".next-section", {
-        y: "-20vh",
-        duration: 2,
-        ease: "power2.inOut"
-      }, "<");
+      }, "+=0.5");
 
     }, containerRef);
 
@@ -66,8 +69,10 @@ export default function Hero() {
   }, []);
 
   return (
-    <section ref={containerRef} className="relative h-screen w-full bg-black">
+    <section ref={containerRef} className="relative h-screen w-full bg-black overflow-hidden">
       <div ref={innerRef} className="relative w-full h-full overflow-hidden bg-black">
+        
+        {/* VIDEOS DE FOND */}
         <div className="absolute inset-0 z-0">
           {slides.map((slide, i) => (
             <video
@@ -76,16 +81,24 @@ export default function Hero() {
               src={slide.video}
               autoPlay muted loop playsInline
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ opacity: i === 0 ? 1 : 0 }}
+              // On force la visibilité CSS initiale pour la première vidéo seulement
+              style={{ opacity: i === 0 ? 1 : 0, visibility: i === 0 ? "visible" : "hidden" }}
             />
           ))}
-          <div className="absolute inset-0 bg-black/40 z-10" />
+          {/* Overlay sombre pour la lisibilité */}
+          <div className="absolute inset-0 bg-black/50 z-10" />
         </div>
 
+        {/* TEXTES CENTREURS */}
         <div className="relative z-20 h-full flex items-center justify-center container-custom">
           {slides.map((slide, i) => (
-            <div key={`text-${slide.id}`} ref={(el) => { textRefs.current[i] = el; }} className="absolute text-center px-6 max-w-5xl">
-              <h1 className="text-[clamp(2.2rem,6vw,5rem)] font-bold tracking-tighter leading-[1.05] text-white">
+            <div 
+              key={`text-${slide.id}`} 
+              ref={(el) => { textRefs.current[i] = el; }} 
+              className="absolute w-full text-center px-6 max-w-5xl pointer-events-none"
+            >
+              {/* Utilisation de slide.title uniquement */}
+              <h1 className="text-[clamp(1.8rem,8vw,4.5rem)] font-bold tracking-tighter leading-[1.1] text-white">
                 {slide.title}
               </h1>
             </div>
