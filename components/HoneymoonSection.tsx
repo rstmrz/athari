@@ -192,7 +192,7 @@ export default function HoneymoonSection() {
 
               {/* PNG Hublot par-dessus */}
               <img 
-                src="/hublot.png" 
+                src="/Hublot.png" 
                 className="absolute inset-0 z-10 w-full h-full object-contain pointer-events-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]" 
                 alt="Hublot" 
               />
