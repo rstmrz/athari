@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -78,7 +79,7 @@ function PhoneItem({ feature }: { feature: any }) {
   );
 }
 
-export default function StickySection() {
+export default function StickySection({ heroCompleted }: { heroCompleted?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRefs = useRef<(HTMLDivElement | null)[]>([]);
   const phoneRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -116,7 +117,13 @@ export default function StickySection() {
       `}</style>
 
       {/* next-section est la classe utilisée par le Hero pour l'animation de montée */}
-      <section ref={containerRef} className="next-section relative h-[400vh] w-full bg-black mt-[-1px]">
+      <motion.section
+        ref={containerRef}
+        className="next-section relative h-[400vh] w-full bg-black mt-[-1px]"
+        initial={{ opacity: 0, y: 50 }}
+        animate={heroCompleted ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+      >
         <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden">
           {features.map((feature, i) => (
             <div key={`text-${feature.id}`} ref={(el) => { textRefs.current[i] = el; }} className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-0 pointer-events-none pt-[80px] sm:pt-0">
@@ -130,7 +137,7 @@ export default function StickySection() {
             </div>
           ))}
         </div>
-      </section>
+      </motion.section>
     </>
   );
 }

@@ -32,7 +32,7 @@ const messageVariants = {
   exit: { opacity: 0, scale: 0.8, y: -100 }
 };
 
-export default function Hero() {
+export default function Hero({ onComplete }: { onComplete?: () => void }) {
   const [stage, setStage] = useState<"intro" | "message" | "final" | "exit">("intro");
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -53,7 +53,10 @@ export default function Hero() {
     }
 
     if (stage === "final") {
-      const timer = window.setTimeout(() => setStage("exit"), 4000);
+      const timer = window.setTimeout(() => {
+        setStage("exit");
+        onComplete?.();
+      }, 4000);
       return () => window.clearTimeout(timer);
     }
   }, [stage]);

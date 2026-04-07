@@ -1,5 +1,6 @@
 "use client"; // <--- TRÈS IMPORTANT
 
+import { useState } from "react";
 import Hero from "../components/Hero";
 import StickySection from "../components/StickySection";
 import BentoGrid from "../components/BentoGrid";
@@ -9,11 +10,13 @@ import TreeSection from "@/components/TreeSection";
 import HoneymoonSection from "@/components/HoneymoonSection";
 
 export default function Home() {
+  const [heroCompleted, setHeroCompleted] = useState(false);
+
   return (
     <main className="relative bg-black min-h-screen">
       <div className="opacity-100 visible transition-opacity duration-1000">
-        <Hero />
-        <StickySection />
+        <Hero onComplete={() => setHeroCompleted(true)} />
+        <StickySection heroCompleted={heroCompleted} />
         <BentoGrid />
         <TreeSection />
         <HoneymoonSection />
