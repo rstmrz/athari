@@ -1,110 +1,234 @@
-"use client";
+﻿import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+const userName = "Prénom";
 
-gsap.registerPlugin(ScrollTrigger);
-
-const slides = [
-  { id: 1, title: "Hello toi, bienvenue dans ton empreinte éternelle.", video: "/famille.mp4" },
-  { id: 2, title: "Un écrin sacré, scellé par tes amies fidèles.", video: "/mer.mp4" },
-  { id: 3, title: "Ton nouveau départ, porté par nos souvenirs.", video: "/plongée.mp4" },
-  { id: 4, title: "Explore ces images, reflets d’un lien précieux.", video: "/surf.mp4" },
+const messageSteps = [
+  {
+    title: "Un voyage cinématographique",
+    copy: "Chaque plan est pensé comme une scène, chaque mot comme un générique.",
+    video: "/famille.mp4"
+  },
+  {
+    title: "Ambiance luxe et suspense",
+    copy: "Une expérience immersive entre noir brillant et lueur rouge velours.",
+    video: "/mer.mp4"
+  },
+  {
+    title: "Ton film commence maintenant",
+    copy: "Trois messages se succèdent pour ouvrir un récit exclusif et intime.",
+    video: "/plongée.mp4"
+  }
 ];
 
+const textVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const messageVariants = {
+  enter: { opacity: 0, scale: 0.8, y: 100 },
+  center: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.8, y: -100 }
+};
+
 export default function Hero() {
-  const containerRef = useRef(null);
-  const innerRef = useRef(null);
-  const textRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const [stage, setStage] = useState<"intro" | "message" | "final" | "exit">("intro");
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // ÉTAT INITIAL : On cache tout sauf la première slide
-      // autoAlpha gère l'opacité ET la visibilité (évite les bugs mobiles)
-      gsap.set(textRefs.current.slice(1), { autoAlpha: 0, y: 30 });
-      gsap.set(videoRefs.current.slice(1), { autoAlpha: 0 });
+    if (stage === "intro") {
+      const timer = window.setTimeout(() => setStage("message"), 3000);
+      return () => window.clearTimeout(timer);
+    }
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top top",
-          end: "+=400%", 
-          scrub: 1, // Lissage pour éviter les saccades au pouce
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true, // Recalcule si la barre d'adresse mobile bouge
-        },
-      });
+    if (stage === "message") {
+      setActiveIndex(0);
+      const timers = [
+        window.setTimeout(() => setActiveIndex(1), 5000),
+        window.setTimeout(() => setActiveIndex(2), 10000),
+        window.setTimeout(() => setStage("final"), 15000),
+      ];
+      return () => timers.forEach((id) => window.clearTimeout(id));
+    }
 
-      // Animation des transitions entre slides
-      slides.forEach((_, i) => {
-        if (i < slides.length - 1) {
-          const label = `fade${i}`;
-          tl.add(label);
-
-          // Sortie de la slide actuelle
-          tl.to(textRefs.current[i], { autoAlpha: 0, y: -40, duration: 1 }, label)
-            .to(videoRefs.current[i], { autoAlpha: 0, duration: 1 }, label)
-            
-          // Entrée de la suivante (avec un léger décalage pour éviter le ghosting)
-          tl.to(textRefs.current[i + 1], { autoAlpha: 1, y: 0, duration: 1 }, `${label}+=0.3`)
-            .to(videoRefs.current[i + 1], { autoAlpha: 1, duration: 1 }, `${label}+=0.3`);
-        }
-      });
-
-      // EFFET DE RÉDUCTION FINAL
-      tl.to(innerRef.current, {
-        scale: 0.92,
-        borderRadius: "40px",
-        autoAlpha: 0,
-        duration: 2,
-        ease: "power2.inOut"
-      }, "+=0.5");
-
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
+    if (stage === "final") {
+      const timer = window.setTimeout(() => setStage("exit"), 4000);
+      return () => window.clearTimeout(timer);
+    }
+  }, [stage]);
 
   return (
-    <section ref={containerRef} className="relative h-screen w-full bg-black overflow-hidden">
-      <div ref={innerRef} className="relative w-full h-full overflow-hidden bg-black">
-        
-        {/* VIDEOS DE FOND */}
-        <div className="absolute inset-0 z-0">
-          {slides.map((slide, i) => (
-            <video
-              key={`video-${slide.id}`}
-              ref={(el) => { videoRefs.current[i] = el; }}
-              src={slide.video}
-              autoPlay muted loop playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              // On force la visibilité CSS initiale pour la première vidéo seulement
-              style={{ opacity: i === 0 ? 1 : 0, visibility: i === 0 ? "visible" : "hidden" }}
-            />
-          ))}
-          {/* Overlay sombre pour la lisibilité */}
-          <div className="absolute inset-0 bg-black/50 z-10" />
-        </div>
+    <AnimatePresence mode="wait">
+      {stage !== "exit" && (
+        <motion.section
+          className="relative min-h-screen overflow-hidden bg-black text-white"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0, transition: { duration: 1.5, ease: "easeInOut" } }}
+        >
+          <div className="absolute inset-0 overflow-hidden">
+            {stage === "intro" && (
+              <video
+                src="/famille.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover opacity-20"
+              />
+            )}
+            {stage === "message" && (
+              <video
+                key={messageSteps[activeIndex].video}
+                src={messageSteps[activeIndex].video}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+            <div className="absolute inset-0 bg-black/80" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_35%)]" />
+          </div>
 
-        {/* TEXTES CENTREURS */}
-        <div className="relative z-20 h-full flex items-center justify-center container-custom">
-          {slides.map((slide, i) => (
-            <div 
-              key={`text-${slide.id}`} 
-              ref={(el) => { textRefs.current[i] = el; }} 
-              className="absolute w-full text-center px-6 max-w-5xl pointer-events-none"
-            >
-              {/* Utilisation de slide.title uniquement */}
-              <h1 className="text-[clamp(1.8rem,8vw,4.5rem)] font-bold tracking-tighter leading-[1.1] text-white">
-                {slide.title}
-              </h1>
+          <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-20">
+            <div className="mx-auto max-w-4xl text-center">
+              <AnimatePresence mode="wait">
+                {stage === "intro" && (
+                  <motion.div
+                    key="intro"
+                    variants={textVariants}
+                    initial="hidden"
+                    animate="visible"
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  >
+                    <motion.span
+                      className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.42em] text-white/70"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5, duration: 0.8 }}
+                    >
+                      Bienvenue {userName}
+                    </motion.span>
+                    <motion.h1
+                      className="mt-8 text-5xl font-serif leading-[0.9] text-white sm:text-6xl md:text-7xl"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1, duration: 1 }}
+                    >
+                      Entre dans une autre dimension.
+                    </motion.h1>
+                    <motion.p
+                      className="mt-6 max-w-2xl text-lg text-white/70 sm:text-xl"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.5, duration: 1 }}
+                    >
+                      Un voyage cinématique entre luxe et film. Le texte se dévoile comme un prologue, l'expérience commence maintenant.
+                    </motion.p>
+                  </motion.div>
+                )}
+
+                {stage === "message" && (
+                  <motion.div
+                    key={`message-${activeIndex}`}
+                    variants={messageVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 1.2, ease: "easeOut" }}
+                    className="mx-auto max-w-3xl"
+                  >
+                    <motion.div
+                      className="mb-4 text-[11px] uppercase tracking-[0.35em] text-amber-200/80"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      Message {activeIndex + 1}
+                    </motion.div>
+                    <motion.h2
+                      className="text-4xl font-semibold text-white sm:text-5xl"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7, duration: 0.8 }}
+                    >
+                      {messageSteps[activeIndex].title}
+                    </motion.h2>
+                    <motion.p
+                      className="mt-6 text-lg leading-8 text-white/70"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1, duration: 0.8 }}
+                    >
+                      {messageSteps[activeIndex].copy}
+                    </motion.p>
+                    <motion.div
+                      className="mt-8 flex justify-center gap-3 text-xs uppercase tracking-[0.28em] text-white/50"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.3 }}
+                    >
+                      <span>Immersion</span>
+                      <span>Film</span>
+                      <span>Luxe</span>
+                    </motion.div>
+                  </motion.div>
+                )}
+
+                {stage === "final" && (
+                  <motion.div
+                    key="final"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className="relative"
+                  >
+                    <motion.div
+                      className="absolute left-0 top-0 h-28 w-full bg-black"
+                      initial={{ y: -112 }}
+                      animate={{ y: 0 }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                    <motion.div
+                      className="absolute left-0 bottom-0 h-28 w-full bg-black"
+                      initial={{ y: 112 }}
+                      animate={{ y: 0 }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                    <div className="relative z-10">
+                      <motion.div
+                        className="mx-auto mb-10 h-2 w-48 animate-pulse rounded-full bg-white/80"
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ delay: 1, duration: 0.8 }}
+                      />
+                      <motion.p
+                        className="text-sm uppercase tracking-[0.38em] text-white/50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.5 }}
+                      >
+                        Chargement du film
+                      </motion.p>
+                      <motion.h2
+                        className="mt-6 text-5xl font-serif text-white sm:text-6xl"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 2, duration: 1 }}
+                      >
+                        Ton histoire commence maintenant
+                      </motion.h2>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
+          </div>
+        </motion.section>
+      )}
+    </AnimatePresence>
   );
 }
