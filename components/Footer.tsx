@@ -1,32 +1,31 @@
-export default function Footer() {
+﻿export default function Footer() {
   return (
-    <footer className="w-full bg-foreground text-background pt-32 pb-10 rounded-t-[40px] md:rounded-t-[80px] mt-20">
-      <div className="container-custom flex flex-col items-center text-center">
-        
-        <h2 className="text-[clamp(4rem,15vw,10rem)] font-bold tracking-tighter leading-none mb-10">
-          athari.
-        </h2>
-        <p className="body-text !text-background/70 mb-12 max-w-2xl">
-          Offrez à ceux que vous aimez le plus beau des héritages : vos mots.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 mb-32">
-          <button className="bg-background text-foreground px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform">
-            Rejoignez l'expérience
-          </button>
+    <footer className="border-t border-white/10 bg-[#020207] py-16 text-white">
+      <div className="container-custom grid gap-10 lg:grid-cols-[1.4fr_1fr]">
+        <div>
+          <p className="text-sm uppercase tracking-[0.35em] text-amber-300/80">Travel</p>
+          <h2 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            Prêt pour votre prochaine escapade ?
+          </h2>
+          <p className="mt-6 max-w-2xl text-base leading-8 text-white/70">
+            Tokyo vous attend avec des itinéraires exclusifs, des nuits mystiques et une atmosphère inoubliable.
+          </p>
         </div>
 
-        <div className="w-full flex flex-col md:flex-row justify-between items-center pt-10 border-t border-background/10 gap-6">
-          <p className="text-background/50 font-medium text-sm md:text-base">
-            © {new Date().getFullYear()} athari. Tous droits réservés.
-          </p>
-          <div className="flex gap-6 text-background/50 font-medium text-sm md:text-base">
-            <a href="#" className="hover:text-background transition-colors">Mentions légales</a>
-            <a href="#" className="hover:text-background transition-colors">Confidentialité</a>
-            <a href="#" className="hover:text-background transition-colors">Contact</a>
+        <div className="grid gap-4 text-white/75">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <span>Support</span>
+            <a href="#" className="text-white hover:text-amber-300">Contact</a>
+          </div>
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <span>Galerie</span>
+            <a href="#" className="text-white hover:text-amber-300">Voir toutes</a>
+          </div>
+          <div className="flex items-center justify-between pt-4">
+            <span>2026 Travel</span>
+            <span className="text-white/70">Tous droits réservés</span>
           </div>
         </div>
-        
       </div>
     </footer>
   );
